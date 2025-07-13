@@ -23,7 +23,7 @@ const SubscriptionSchema = new mongoose.Schema({
     frequency:{
         type: String,
         required: [true, "Duration is required"],
-        enum: [ "Daily","Weekly","monthly", "yearly"],
+        enum: [ "daily","weekly","monthly", "yearly"],
     },
     category:{
         type: String,
@@ -53,7 +53,6 @@ const SubscriptionSchema = new mongoose.Schema({
     },
     renewalDate:{
         type: Date,
-        required: [true, "Start date is required"],
         validate: {
             validator: function(value) {
                 return value > this.startDate;
@@ -69,19 +68,27 @@ const SubscriptionSchema = new mongoose.Schema({
     }},{timestamps: true});
 
 SubscriptionSchema.pre("save", function(next) {
-    if (this.renewalDate) {
-       const renewalPeriods = {
-            Daily: 1,
-            Weekly: 7,
-            Monthly: 30,
-            Yearly: 365
+    // Only calculate renewalDate if startDate exists and frequency is valid
+    if (this.startDate && this.frequency) {
+        const renewalPeriods = {
+            daily: 1,
+            weekly: 7,
+            monthly: 30,  // Changed to lowercase to match your enum
+            yearly: 365   // Changed to lowercase to match your enum
         };
-        this.renewalDate = new Date(this.startDate)
-        this.renewalDate.setDate(this.renewalDate.getDate() + renewalPeriods[this.frequency]);
+        
+        // Ensure frequency exists in renewalPeriods
+        if (renewalPeriods[this.frequency]) {
+            this.renewalDate = new Date(this.startDate);
+            this.renewalDate.setDate(this.renewalDate.getDate() + renewalPeriods[this.frequency]);
+        }
     }
-    if (new Date() > this.renewalDate) {
+
+    // Update status if renewalDate exists and is in the past
+    if (this.renewalDate && new Date() > this.renewalDate) {
         this.status = "expired";
     }
+    
     next();
 });
 
