@@ -117,7 +117,7 @@ Open [http://localhost:5500](http://localhost:5500) in your browser or any HTTP 
 
 ```json
 {
-  "name": "Javascript Mastery Elite Membership",
+  "name": "Bhavya Backend API Course",
   "price": 139.00,
   "currency": "USD",
   "frequency": "monthly",
